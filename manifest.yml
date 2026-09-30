@@ -1,0 +1,34 @@
+modules:
+  jira:uiModifications:
+    - key: basic-behaviors
+      title: Basic Behaviors
+      resource: behaviors
+  trigger:
+    - key: sync-on-install
+      function: sync
+      events:
+        - avi:forge:installed:app
+        - avi:forge:upgraded:app
+  scheduledTrigger:
+    - key: sync-daily
+      function: sync
+      interval: day
+  function:
+    - key: sync
+      handler: index.syncContexts
+resources:
+  - key: behaviors
+    path: static/behaviors/build
+permissions:
+  scopes:
+    - manage:jira-configuration
+    - read:jira-work
+    - write:jira-work
+    - read:jira-user
+
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/ff1a4ae0-d490-4ffd-ae19-5172e13f737d

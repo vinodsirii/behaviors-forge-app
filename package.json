@@ -1,0 +1,14 @@
+{
+  "name": "jira-ui-modifications-custom-ui",
+  "version": "1.1.44-next.2",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  },
+  "dependencies": {
+    "@forge/api": "8.2.0-next.2"
+  }
+}

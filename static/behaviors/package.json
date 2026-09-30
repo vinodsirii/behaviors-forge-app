@@ -1,0 +1,16 @@
+{
+  "name": "behaviors-static",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@forge/bridge": "^7.1.0",
+    "@forge/jira-bridge": "^1.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
