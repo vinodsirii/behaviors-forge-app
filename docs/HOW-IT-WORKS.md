@@ -319,7 +319,194 @@ Backend errors (from `syncContexts`) appear in `forge logs -e development`.
 
 ---
 
-## 5. Who calls who – the whole map
+## 5. Flow diagrams
+
+These diagrams are drawn automatically on GitHub (and in VS Code with a Mermaid extension).
+Section 6 shows the same map as plain text.
+
+### 5.1 The whole app – which file calls which
+
+Solid arrows (`-->`) are direct calls or imports. Dotted arrows (`-.->`) are "Jira or Forge does
+this for us".
+
+```mermaid
+flowchart TD
+    subgraph PC["Your PC"]
+        YOU(["You"])
+        BUILDMJS["static/behaviors/build.mjs"]
+        BUILD[("static/behaviors/build/<br/>index.html + index.js")]
+    end
+
+    subgraph FORGE["Forge platform"]
+        MANIFEST["manifest.yml"]
+        TRIG["triggers<br/>sync-on-install · sync-daily"]
+    end
+
+    subgraph BACKEND["Backend – Atlassian servers"]
+        SYNC["src/index.js<br/>syncContexts()"]
+    end
+
+    subgraph JIRA["Jira"]
+        REST[("Jira REST API")]
+        UIM[("UI modification record<br/>basic-behaviors + contexts")]
+        CREATE(["Create issue dialog"])
+    end
+
+    subgraph BROWSER["Frontend – user's browser"]
+        FEINDEX["static/behaviors/src/index.js<br/>onInit · onChange"]
+        LIST["behaviours/index.js"]
+        B["behaviours/01 … 10-*.js<br/>apply(ctx)"]
+        HELP["helpers.js"]
+        BRIDGE["@forge/bridge<br/>view.getContext()"]
+        JBRIDGE["@forge/jira-bridge<br/>uiModificationsApi"]
+    end
+
+    YOU -- "npm run build" --> BUILDMJS
+    BUILDMJS -- "bundles src into" --> BUILD
+    YOU -- "forge deploy" --> MANIFEST
+    MANIFEST -- "uploads" --> BUILD
+    MANIFEST -- "uploads" --> SYNC
+    MANIFEST -- "declares" --> TRIG
+
+    TRIG -. "install / upgrade / daily" .-> SYNC
+    SYNC -- "GET projects, GET + PUT/POST uiModifications" --> REST
+    REST --> UIM
+
+    CREATE -. "context matches?" .-> UIM
+    UIM -. "loads build/index.js" .-> FEINDEX
+    FEINDEX -- "registers handlers" --> JBRIDGE
+    JBRIDGE -. "calls onInit / onChange" .-> FEINDEX
+    FEINDEX -- "issue type" --> BRIDGE
+    FEINDEX -- "imports list" --> LIST
+    LIST -- "imports" --> B
+    FEINDEX -- "apply(ctx)" --> B
+    B -- "imports" --> HELP
+    B -- "ctx.field(id).setRequired / setVisible / …" --> CREATE
+```
+
+### 5.2 Who imports whom (frontend code)
+
+Each arrow means "imports". `helpers.js` imports nothing, so it is the bottom of the tree.
+
+```mermaid
+flowchart LR
+    IDX["src/index.js"] --> JB["@forge/jira-bridge"]
+    IDX --> BR["@forge/bridge"]
+    IDX --> LIST["behaviours/index.js"]
+
+    LIST --> B01["01-summary-quality"]
+    LIST --> B02["02-description-template"]
+    LIST --> B03["03-bug-reporting"]
+    LIST --> B04["04-priority-sla"]
+    LIST --> B05["05-ownership"]
+    LIST --> B06["06-epic-planning"]
+    LIST --> B07["07-customer-escalation"]
+    LIST --> B08["08-release-fields"]
+    LIST --> B09["09-story-parent"]
+    LIST --> B10["10-incident-mode"]
+
+    B01 -- "PRIORITY_IDS, priorityNameOf" --> H["helpers.js"]
+    B02 -- "hasText" --> H
+    B03 -- "renameField" --> H
+    B04 -- "priorityNameOf" --> H
+    B06 -- "renameField" --> H
+    B07 -- "labelsOf" --> H
+    B09 -- "renameField" --> H
+    B10 -- "priorityNameOf, renameField" --> H
+```
+
+`05-ownership` and `08-release-fields` don't need any helpers.
+
+### 5.3 Install / upgrade / daily – the backend sync
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor You
+    participant Forge as Forge platform
+    participant Sync as src/index.js
+    participant Jira as Jira REST API
+
+    You->>Forge: forge deploy, then forge install
+    Forge->>Sync: trigger sync-on-install → syncContexts()
+    Sync->>Jira: GET /project/search?expand=issueTypes (all pages)
+    Jira-->>Sync: projects + their issue types
+    Note over Sync: buildContexts() makes one context per<br/>project + issue type, viewType GIC
+    Sync->>Jira: GET /uiModifications?expand=contexts (all pages)
+    Jira-->>Sync: existing UI modifications
+    alt "basic-behaviors" already exists
+        Sync->>Jira: PUT /uiModifications/{id} with contexts
+    else first install
+        Sync->>Jira: POST /uiModifications with name + contexts
+    end
+    Note over Forge,Sync: The scheduled trigger sync-daily repeats steps 2–7<br/>once a day, so new projects are picked up.
+```
+
+### 5.4 Opening Create issue – `onInit`
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Jira as Jira Create dialog
+    participant FE as src/index.js
+    participant Bridge as @forge/bridge
+    participant B as behaviours 01…10
+    participant H as helpers.js
+
+    User->>Jira: clicks Create (e.g. issue type Bug)
+    Jira->>Jira: is there a context for this project + Bug + GIC?
+    Jira->>FE: loads build/index.js (runs the imports, registers onInit and onChange)
+    Jira->>FE: onInit({ api })
+    FE->>Bridge: view.getContext()
+    Bridge-->>FE: issue type "Bug" → "bug"
+    FE->>FE: createContext(api, isInit = true) → ctx
+    loop runBehaviours – each of the 10, in order, inside try/catch
+        FE->>B: apply(ctx)
+        B->>H: helper if needed (renameField, hasText, …)
+        B->>Jira: ctx.field(id) → setRequired / setVisible / setReadOnly / setName / setValue
+    end
+    Jira-->>User: form shows the changed fields
+```
+
+If the user switches **issue type** or **project**, Jira runs this whole diagram again.
+
+### 5.5 Changing a field – `onChange` (with a chain)
+
+The example: the user types `URGENT printer on fire` in Summary.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Jira as Jira Create dialog
+    participant FE as src/index.js
+    participant B01 as 01-summary-quality
+    participant B04 as 04-priority-sla
+    participant B10 as 10-incident-mode
+
+    User->>Jira: types in Summary, clicks away
+    Jira->>FE: onChange({ api, change }), changed field = summary
+    FE->>FE: createContext(api, isInit = false, new summary value)
+    FE->>FE: triggered = behaviours listening to "summary" → [01]
+    FE->>B01: apply(ctx)
+    B01->>Jira: Summary helper text
+    B01->>FE: ctx.setValue("priority", "1")
+    FE->>Jira: Priority = Highest (and remembers "priority changed")
+    Note over FE: Jira does not fire onChange for changes made by the app,<br/>so src/index.js runs the follow-ups itself
+    FE->>FE: follow-ups = behaviours listening to "priority" → [04, 10]
+    FE->>B04: apply(ctx)
+    B04->>Jira: Due date + Labels required
+    FE->>B10: apply(ctx)
+    B10->>Jira: "Incident summary", "Affected service"
+    Jira-->>User: all changes visible
+```
+
+If the user changes **Priority** directly, `onChange` runs 04 and 10 straight away – no chain is needed.
+
+---
+
+## 6. Who calls who – the whole map (plain text)
 
 ```
                           ┌──────────────────────┐
@@ -362,7 +549,7 @@ Backend errors (from `syncContexts`) appear in `forge logs -e development`.
 
 ---
 
-## 6. How to read the code yourself
+## 7. How to read the code yourself
 
 Read in this order – each file only depends on the ones before it:
 
