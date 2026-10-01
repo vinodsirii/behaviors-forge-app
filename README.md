@@ -25,6 +25,8 @@ Behaviours are skipped for any field that isn't on the project's create screen.
 - `src/index.js` – registers the UI modification for every project and issue type. Runs on install, on upgrade and once a day.
 - `manifest.yml` – modules and permissions
 
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the app works and what every file does.
+
 ## Adding a behaviour
 
 1. Copy a file in `static/behaviors/src/behaviours/`, give it a new `id`, and set `fields`, `triggers` and `apply`.
