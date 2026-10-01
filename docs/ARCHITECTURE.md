@@ -103,6 +103,10 @@ Connects Jira to the behaviours. Contains no business rules.
 
 ### `src/helpers.js`
 
+Shared functions used by two or more behaviours. Imports nothing and changes no fields by itself
+(except `renameField`, which renames the field it is given). See
+[HOW-IT-WORKS.md](HOW-IT-WORKS.md#staticbehaviorssrchelpersjs--the-shared-toolbox) for examples and which behaviour uses which helper.
+
 | Function | Purpose |
 |---|---|
 | `PRIORITY_IDS`, `priorityNameOf()` | Converts `"1"` or `{ name: "Highest" }` to `"Highest"`. Assumes the default Jira priority ids. |

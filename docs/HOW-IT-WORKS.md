@@ -181,8 +181,11 @@ export default {
 
 ### `static/behaviors/src/helpers.js` – the shared toolbox
 
-- **What:** Small functions several behaviours need.
+- **What:** Small functions that **several behaviours need**. Instead of copying the same code
+  into many behaviour files, it is written once here and imported where needed.
+  Fix it in one place → every behaviour gets the fix.
 - **Called by:** behaviour files (01, 02, 03, 04, 06, 07, 09, 10).
+- **Calls:** nothing. It imports nothing and never changes a field by itself – it is only a toolbox.
 
 | Function | Used by | What it does |
 |---|---|---|
@@ -191,6 +194,84 @@ export default {
 | `labelsOf()` | 07 | Turns the Labels value into lower-case words |
 | `hasText()` | 02 | "Does the Description already have text?" |
 | `renameField()` | 03, 06, 09, 10 | Renames a field and remembers the original name to restore later |
+
+#### Why each helper exists
+
+**`PRIORITY_IDS`** – to *set* Priority, Jira needs the id, not the name.
+
+```js
+PRIORITY_IDS.Highest   // → '1'   (used by behaviour 01 when the summary starts with "URGENT")
+```
+
+These are Jira's default priority ids. If your site uses a custom priority scheme, change them here
+and behaviours 01, 04 and 10 all pick up the change.
+
+**`priorityNameOf(value)`** – Jira can return the Priority value in different shapes.
+This turns all of them into a plain name, so behaviours can simply write `if (priority === 'Highest')`.
+
+```js
+priorityNameOf('1')                   // → 'Highest'
+priorityNameOf({ id: '1' })           // → 'Highest'
+priorityNameOf({ name: 'Highest' })   // → 'Highest'
+priorityNameOf(undefined)             // → undefined (no priority chosen)
+```
+
+**`labelsOf(value)`** – makes label checks safe and case-insensitive.
+
+```js
+labelsOf(['Customer', 'UI'])   // → ['customer', 'ui']
+labelsOf(undefined)            // → []   (no crash when Labels is empty)
+```
+
+So `Customer`, `CUSTOMER` and `customer` all trigger behaviour 07.
+
+**`hasText(value)`** – checks whether Description *really* contains text.
+The rich-text editor stores even an empty Description as nested JSON (ADF), so a simple
+`if (description)` is not enough.
+
+```js
+hasText('')                                   // → false
+hasText({ type: 'doc', content: [] })         // → false (empty editor)
+hasText({ type: 'doc', content: [ /* paragraph with "Hello" */ ] })   // → true
+```
+
+Behaviour 02 uses this so it never overwrites what the user typed.
+
+**`renameField(field, newName)`** – renames a field, and puts the original name back when
+`newName` is `null`.
+
+```js
+renameField(description, 'Steps to reproduce')   // rename
+renameField(description, null)                   // restore the original name
+```
+
+The first time it sees a field it **remembers the original name**. That is how switching from Bug
+back to Task restores "Description" without hard-coding the word – which also keeps it working when
+Jira is shown in another language (e.g. "Beschreibung").
+
+#### Which behaviour uses which helper
+
+| Behaviour | Helpers used |
+|---|---|
+| 01 summary-quality | `PRIORITY_IDS`, `priorityNameOf` |
+| 02 description-template | `hasText` |
+| 03 bug-reporting | `renameField` |
+| 04 priority-sla | `priorityNameOf` |
+| 05 ownership | – |
+| 06 epic-planning | `renameField` |
+| 07 customer-escalation | `labelsOf` |
+| 08 release-fields | – |
+| 09 story-parent | `renameField` |
+| 10 incident-mode | `priorityNameOf`, `renameField` |
+
+#### When to add something to `helpers.js`
+
+- **Add it here** when **two or more** behaviours need the same logic – e.g. reading a field value
+  safely or converting a format.
+- **Keep it in the behaviour file** when only one behaviour uses it (e.g. the Description templates
+  live in `02-description-template.js`).
+- Keep helpers small, with no side effects: they take a value and return a value
+  (`renameField` is the one exception – it changes the field you pass in).
 
 ### Other files
 
