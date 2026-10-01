@@ -25,7 +25,7 @@ Behaviours are skipped for any field that isn't on the project's create screen.
 - `src/index.js` – registers the UI modification for every project and issue type. Runs on install, on upgrade and once a day.
 - `manifest.yml` – modules and permissions
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the app works and what every file does.
+New to the app? Start with [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md) – a beginner's guide that follows the calls between files step by step. For a shorter technical reference, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Adding a behaviour
 
