@@ -3,7 +3,7 @@
 This guide explains, in plain language, **what every file is for** and **which file calls which**,
 by following real examples step by step. No Forge knowledge needed.
 
-For a shorter reference, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For a shorter reference, see [ARCHITECTURE.md](ARCHITECTURE.md). To add a new behaviour, see [ADDING-A-BEHAVIOUR.md](ADDING-A-BEHAVIOUR.md).
 
 ---
 

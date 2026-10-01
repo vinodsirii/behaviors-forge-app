@@ -33,6 +33,8 @@ New to the app? Start with [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md) – a be
 2. Add it to the array in `behaviours/index.js`.
 3. Make sure it doesn't change a field property another behaviour already owns (see the table there).
 
+No `manifest.yml` change is needed unless the behaviour needs new permissions. See [docs/ADDING-A-BEHAVIOUR.md](docs/ADDING-A-BEHAVIOUR.md) for the full step-by-step guide with a worked example, a template and a checklist.
+
 ## Change and redeploy
 
 ```sh

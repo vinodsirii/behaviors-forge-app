@@ -164,7 +164,7 @@ Output of `npm run build`. Deployed by Forge; never edited by hand.
 |---|---|
 | Change a rule | `static/behaviors/src/behaviours/NN-*.js` |
 | Add a behaviour | New file in `behaviours/` + one line in `behaviours/index.js`; check the ownership table |
-| Apply to the issue view as well as Create | `src/index.js` – add contexts with `viewType: 'IssueView'` (not every field change is supported there, e.g. `setRequired`) |
+| Apply to the issue view as well as Create | `src/index.js` – add contexts with `viewType: 'IssueView'` (not every field or method is supported there – check Atlassian's supported-fields list) |
 | Add a scope | `manifest.yml`, then `forge deploy` and `forge install --upgrade` |
 | Ship a change | `npm run build` in `static/behaviors`, then `forge deploy -e development` |
 
