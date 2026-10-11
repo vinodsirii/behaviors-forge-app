@@ -1,0 +1,12 @@
+{
+  "name": "forge-apple-1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "description": "Jira workflow rules for the 'Forge Apple 1' workflow",
+  "dependencies": {
+    "@forge/api": "^8.2.0",
+    "@vinod/forge-common": "file:../../packages/forge-common/dist/vinod-forge-common-1.0.0.tgz"
+  }
+}

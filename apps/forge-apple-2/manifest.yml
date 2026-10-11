@@ -1,0 +1,41 @@
+# Forge Apple 2 - workflow rules for the Jira workflow "Forge Apple 2".
+# All business logic comes from the shared library @vinod/forge-common.
+modules:
+  # Validator: runs when the user clicks the transition; can block it with a message.
+  jira:workflowValidator:
+    - key: fa2-required-fields-validator
+      name: "FA2 – Description and priority required"
+      description: "Blocks the transition unless description and priority are set."
+      function: fa2-validate-required
+
+  # Condition: decides whether the transition button is shown at all.
+  jira:workflowCondition:
+    - key: fa2-has-label-condition
+      name: "FA2 – Issue must have a label"
+      description: "The transition is only available when the issue has at least one label."
+      expression: issue.labels.length > 0
+
+  # Post function: runs asynchronously AFTER the transition has completed.
+  jira:workflowPostFunction:
+    - key: fa2-audit-comment-label-postfunction
+      name: "FA2 – Add audit comment + label"
+      description: "Adds an audit comment and the forge-apple-2-processed label."
+      function: fa2-audit-comment-label
+
+  function:
+    - key: fa2-validate-required
+      handler: index.validateRequired
+    - key: fa2-audit-comment-label
+      handler: index.auditCommentAndLabel
+
+app:
+  runtime:
+    name: nodejs22.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/9da1f2d9-37e1-4a3a-a000-c0ed5ff96d6f
+
+permissions:
+  scopes:
+    - read:jira-work    # getIssue
+    - write:jira-work   # addComment, setLabel
