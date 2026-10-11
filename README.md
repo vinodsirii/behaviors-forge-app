@@ -13,6 +13,12 @@ The goal is to prove that shared logic is written once, unit-tested once and reu
 - **Forge account:** `vinodsirii.228@gmail.com`
 - **Environment:** `development`
 
+**Documentation**
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): diagrams of the components, the build and deploy pipeline,
+  the runtime sequence, how the apps relate, and the design decisions
+- [docs/CODE-WALKTHROUGH.md](docs/CODE-WALKTHROUGH.md): every file and function explained line by line
+
 ```
 forge-apple/
 ├── packages/forge-common/
