@@ -11,7 +11,7 @@ const REQUIRED_FIELDS = ['description', 'priority'];
 const PROCESSED_LABEL = 'forge-apple-2-processed';
 
 /**
- * Workflow validator - "FA2 – Description and priority required".
+ * Workflow validator - "FA2 – Validator: Description and priority required".
  *
  *   args = { issue: { key }, transition: { from, to, modifiedFields } }
  * Must return { result: boolean, errorMessage?: string }.
@@ -38,7 +38,7 @@ export const validateRequired = async (args) => {
 };
 
 /**
- * Post function - "FA2 – Add audit comment + label".
+ * Post function - "FA2 – Post function: Add audit comment + label".
  *
  * Runs asynchronously after the transition. Adds the audit comment first, then
  * marks the issue as processed (existing labels are kept).

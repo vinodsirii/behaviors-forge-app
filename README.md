@@ -134,12 +134,12 @@ forge tunnel                                               # run handlers locall
 
    | Workflow | Rule type in editor | Rule to add |
    |---|---|---|
-   | Forge Apple 1 | Restrict transition (condition) | **FA1 – Only assignee can transition** |
-   | Forge Apple 1 | Validate details (validator) | **FA1 – Summary length ≥ 10** |
-   | Forge Apple 1 | Perform actions (post function) | **FA1 – Add audit comment** |
-   | Forge Apple 2 | Restrict transition (condition) | **FA2 – Issue must have a label** |
-   | Forge Apple 2 | Validate details (validator) | **FA2 – Description and priority required** |
-   | Forge Apple 2 | Perform actions (post function) | **FA2 – Add audit comment + label** |
+   | Forge Apple 1 | Restrict transition (condition) | **FA1 – Condition: Only assignee can transition** |
+   | Forge Apple 1 | Validate details (validator) | **FA1 – Validator: Summary length ≥ 10** |
+   | Forge Apple 1 | Perform actions (post function) | **FA1 – Post function: Add audit comment** |
+   | Forge Apple 2 | Restrict transition (condition) | **FA2 – Condition: Issue must have a label** |
+   | Forge Apple 2 | Validate details (validator) | **FA2 – Validator: Description and priority required** |
+   | Forge Apple 2 | Perform actions (post function) | **FA2 – Post function: Add audit comment + label** |
 
    Save or publish each workflow.
 4. **Apply the workflows.** Go to ⚙ Settings → Work items → Workflow schemes → create
@@ -200,7 +200,7 @@ The unit tests in `validators.test.js` cover that case.
 
 ### 5.2 Rules are reusable across workflows without code changes
 
-1. Edit the **Forge Apple 2** workflow → To Do → In Progress → *Validate details* → add **FA1 – Summary length ≥ 10**. Publish.
+1. Edit the **Forge Apple 2** workflow → To Do → In Progress → *Validate details* → add **FA1 – Validator: Summary length ≥ 10**. Publish.
 2. In **FAPB**, create an issue with a label, a description, priority, and summary `Short`.
 3. Transition it. It is **blocked by the FA1 rule**: *Summary must be at least 10 characters (currently 5).*
 4. Change the summary to 10+ characters. The transition succeeds, and the FA2 post function adds its comment and label.

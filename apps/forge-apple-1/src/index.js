@@ -10,7 +10,7 @@ import { getIssue, validateSummaryLength, addComment, LIB_VERSION } from '@vinod
 const MIN_SUMMARY_LENGTH = 10;
 
 /**
- * Workflow validator - "FA1 – Summary length ≥ 10".
+ * Workflow validator - "FA1 – Validator: Summary length ≥ 10".
  *
  * Jira calls this when a user attempts the transition.
  *   args = { issue: { key }, transition: { from, to, modifiedFields } }
@@ -35,7 +35,7 @@ export const validateSummary = async (args) => {
 };
 
 /**
- * Post function - "FA1 – Add audit comment".
+ * Post function - "FA1 – Post function: Add audit comment".
  *
  * Jira calls this asynchronously AFTER the transition completes.
  *   event = { issue: { id, key }, transition, ... }

@@ -5,9 +5,9 @@ Jira workflow rules for the **Forge Apple 2** workflow. All logic comes from the
 
 | Rule (as shown in Jira) | Module | Implementation |
 |---|---|---|
-| FA2 – Issue must have a label | `jira:workflowCondition` | Jira expression: `issue.labels.length > 0` |
-| FA2 – Description and priority required | `jira:workflowValidator` | `validateRequired` → `validateRequiredFields(fields, ['description', 'priority'])` |
-| FA2 – Add audit comment + label | `jira:workflowPostFunction` | `auditCommentAndLabel` → `addComment(...)` + `setLabel(key, 'forge-apple-2-processed')` |
+| FA2 – Condition: Issue must have a label | `jira:workflowCondition` | Jira expression: `issue.labels.length > 0` |
+| FA2 – Validator: Description and priority required | `jira:workflowValidator` | `validateRequired` → `validateRequiredFields(fields, ['description', 'priority'])` |
+| FA2 – Post function: Add audit comment + label | `jira:workflowPostFunction` | `auditCommentAndLabel` → `addComment(...)` + `setLabel(key, 'forge-apple-2-processed')` |
 
 ## Commands (run in this folder)
 

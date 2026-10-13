@@ -4,7 +4,7 @@ modules:
   # Validator: runs when the user clicks the transition; can block it with a message.
   jira:workflowValidator:
     - key: fa1-summary-length-validator
-      name: "FA1 – Summary length ≥ 10"
+      name: "FA1 – Validator: Summary length ≥ 10"
       description: "Blocks the transition unless the summary has at least 10 characters."
       function: fa1-validate-summary
 
@@ -12,14 +12,14 @@ modules:
   # Expression-based (Jira expression), so no function/code is needed.
   jira:workflowCondition:
     - key: fa1-assignee-only-condition
-      name: "FA1 – Only assignee can transition"
+      name: "FA1 – Condition: Only assignee can transition"
       description: "Only the current assignee can see and use this transition."
       expression: issue.assignee != null && issue.assignee.accountId == user.accountId
 
   # Post function: runs asynchronously AFTER the transition has completed.
   jira:workflowPostFunction:
     - key: fa1-audit-comment-postfunction
-      name: "FA1 – Add audit comment"
+      name: "FA1 – Post function: Add audit comment"
       description: "Adds an audit comment to the issue after the transition."
       function: fa1-audit-comment
 

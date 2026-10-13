@@ -5,9 +5,9 @@ Jira workflow rules for the **Forge Apple 1** workflow. All logic comes from the
 
 | Rule (as shown in Jira) | Module | Implementation |
 |---|---|---|
-| FA1 – Only assignee can transition | `jira:workflowCondition` | Jira expression: `issue.assignee != null && issue.assignee.accountId == user.accountId` |
-| FA1 – Summary length ≥ 10 | `jira:workflowValidator` | `validateSummary` → `validateSummaryLength(summary, 10)` |
-| FA1 – Add audit comment | `jira:workflowPostFunction` | `auditComment` → `addComment(key, 'Forge Apple 1 transition executed')` |
+| FA1 – Condition: Only assignee can transition | `jira:workflowCondition` | Jira expression: `issue.assignee != null && issue.assignee.accountId == user.accountId` |
+| FA1 – Validator: Summary length ≥ 10 | `jira:workflowValidator` | `validateSummary` → `validateSummaryLength(summary, 10)` |
+| FA1 – Post function: Add audit comment | `jira:workflowPostFunction` | `auditComment` → `addComment(key, 'Forge Apple 1 transition executed')` |
 
 ## Commands (run in this folder)
 

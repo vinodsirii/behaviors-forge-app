@@ -233,18 +233,18 @@ Both apps follow the same pattern: **the manifest declares the rules, and `src/i
 modules:
   jira:workflowValidator:
     - key: fa1-summary-length-validator      # stable ID Jira stores in the workflow; don't rename after use
-      name: "FA1 – Summary length ≥ 10"      # what admins see in the workflow editor
+      name: "FA1 – Validator: Summary length ≥ 10" # what admins see in the workflow editor
       description: "..."
       function: fa1-validate-summary         # points to a function module below
 
   jira:workflowCondition:
     - key: fa1-assignee-only-condition
-      name: "FA1 – Only assignee can transition"
+      name: "FA1 – Condition: Only assignee can transition"
       expression: issue.assignee != null && issue.assignee.accountId == user.accountId
 
   jira:workflowPostFunction:
     - key: fa1-audit-comment-postfunction
-      name: "FA1 – Add audit comment"
+      name: "FA1 – Post function: Add audit comment"
       function: fa1-audit-comment
 
   function:
