@@ -1,0 +1,12 @@
+{
+  "name": "wf-md-peer-review",
+  "version": "1.0.0",
+  "description": "Jira workflow rules for the 'MD - Peer Review Workflow' workflow",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@forge/api": "^8.3.0",
+    "@vinod/forge-common": "file:../../packages/forge-common/dist/vinod-forge-common-1.0.0.tgz"
+  }
+}

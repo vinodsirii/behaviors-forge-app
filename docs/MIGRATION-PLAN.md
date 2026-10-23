@@ -190,6 +190,7 @@ export const validateSummary = async (args) => {
 - Validators **fail closed**: catch errors and return `{ result: false, errorMessage }`.
 - Post functions catch and **log** errors, because their return value is ignored.
 - Module **keys are permanent** once a workflow uses them. Change the `name`, never the `key`.
+- **Function** keys (under `function:`) are limited to **23 characters**; `forge lint` reports longer ones.
 - Request only the scopes the workflow needs.
 
 ---

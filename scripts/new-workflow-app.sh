@@ -34,8 +34,10 @@ fi
 if [[ ! "$APP_NAME" =~ ^[a-z][a-z0-9-]*$ ]]; then
   echo "App name must be lowercase letters, digits and dashes (e.g. wf-purchase-approval)." >&2; exit 1
 fi
-if [[ ! "$PREFIX" =~ ^[A-Z][A-Z0-9]*$ ]]; then
-  echo "Rule prefix must be uppercase letters/digits (e.g. PA). It prefixes rule names and keys." >&2; exit 1
+if [[ ! "$PREFIX" =~ ^[A-Z][A-Z0-9]{0,9}$ ]]; then
+  # Max 10 chars: Forge function keys are limited to 23 characters, and the
+  # template's longest function key is "<prefix>-validate" (prefix + 9).
+  echo "Rule prefix must be 1-10 uppercase letters/digits (e.g. PA). It prefixes rule names and keys." >&2; exit 1
 fi
 if [[ "$WORKFLOW_NAME" =~ [\'\"\`\\] ]]; then
   # The name is inserted into JavaScript/JSON strings; quotes would break them.

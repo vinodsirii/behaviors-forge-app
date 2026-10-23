@@ -11,7 +11,7 @@ modules:
     - key: __PREFIX_LOWER__-required-fields-validator
       name: "__PREFIX__ – Validator: Required fields (EXAMPLE)"
       description: "Blocks the transition unless the required fields are set."
-      function: __PREFIX_LOWER__-validate-required
+      function: __PREFIX_LOWER__-validate
 
   # Condition: decides whether the transition is offered at all.
   # Jira expression - evaluated by Jira, no function needed.
@@ -26,13 +26,13 @@ modules:
     - key: __PREFIX_LOWER__-audit-comment-postfunction
       name: "__PREFIX__ – Post function: Add audit comment (EXAMPLE)"
       description: "Adds an audit comment after the transition."
-      function: __PREFIX_LOWER__-audit-comment
+      function: __PREFIX_LOWER__-comment
 
   # Maps function keys (used above) to exported handlers in src/index.js.
   function:
-    - key: __PREFIX_LOWER__-validate-required
+    - key: __PREFIX_LOWER__-validate
       handler: index.validateRequired
-    - key: __PREFIX_LOWER__-audit-comment
+    - key: __PREFIX_LOWER__-comment
       handler: index.auditComment
 
 # `forge register` adds the app id below when the app is scaffolded.

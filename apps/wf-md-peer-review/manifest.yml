@@ -1,0 +1,72 @@
+# wf-md-peer-review - workflow rules for the Jira workflow "MD - Peer Review Workflow".
+# All function logic comes from the shared library @vinod/forge-common.
+#
+# WORKFLOW SCOPING
+# Jira lists every installed app's rules in EVERY workflow's "Add rule" dialog;
+# Forge has no manifest setting to hide a rule from other workflows (only
+# `projectTypes`). So the rules below are:
+#   - named "MDPR – ..." so admins can see they belong to this workflow, and
+#   - where possible (Jira expressions), guarded with
+#       workflow.name != 'MD - Peer Review Workflow' || <rule>
+#     which makes the rule a no-op (always passes) in any other workflow.
+# Function-based rules (description validator, post function) receive no
+# workflow name from Jira, so they cannot be guarded this way.
+#
+# The workflow name below must match the Jira workflow name EXACTLY. If the
+# workflow is renamed, update it in BOTH expressions below (and the
+# descriptions) and redeploy - otherwise the guarded rules silently pass everywhere.
+modules:
+  # Condition: decides whether the transition is offered at all.
+  jira:workflowCondition:
+    - key: mdpr-reporter-cannot-review-condition
+      name: "MDPR – Condition: Reporter cannot review own work"
+      description: "MD - Peer Review Workflow only: hides the transition from the
+        issue's reporter."
+      expression: "workflow.name != 'MD - Peer Review Workflow' || issue.reporter ==
+        null || user.accountId != issue.reporter.accountId"
+
+  jira:workflowValidator:
+    # Expression validator: evaluated by Jira, can be scoped to this workflow.
+    - key: mdpr-reviewer-assigned-validator
+      name: "MDPR – Validator: Reviewer assigned (not the reporter)"
+      description: "MD - Peer Review Workflow only: the assignee is the reviewer and
+        must be someone other than the reporter."
+      expression: "workflow.name != 'MD - Peer Review Workflow' || (issue.assignee !=
+        null && (issue.reporter == null || issue.assignee.accountId !=
+        issue.reporter.accountId))"
+      errorMessage: "MDPR: assign a reviewer (someone other than the reporter) before
+        sending this for peer review."
+
+    # Function validator: uses the shared library (not workflow-scoped, see above).
+    - key: mdpr-description-required-validator
+      name: "MDPR – Validator: Description required for review"
+      description: "Use in MD - Peer Review Workflow: blocks the transition unless the
+        description is filled in."
+      function: mdpr-check-description
+
+  # Post function: runs asynchronously AFTER the transition has completed.
+  jira:workflowPostFunction:
+    - key: mdpr-record-review-postfunction
+      name: "MDPR – Post function: Record peer review"
+      description: "Use in MD - Peer Review Workflow: adds an audit comment and the
+        md-peer-review label."
+      function: mdpr-record-review
+
+  # Maps function keys (used above) to exported handlers in src/index.js.
+  function:
+    - key: mdpr-check-description
+      handler: index.validateDescription
+    - key: mdpr-record-review
+      handler: index.recordPeerReview
+
+app:
+  runtime:
+    name: nodejs22.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/9928dd33-7cd7-4873-b9a1-cc76d41d58e0
+
+permissions:
+  scopes:
+    - read:jira-work # getIssue
+    - write:jira-work # addComment, setLabel
