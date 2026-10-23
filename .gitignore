@@ -1,2 +1,6 @@
 node_modules/
 packages/forge-common/dist/
+
+# Discovery tool output and raw DC exports (may contain scripts / internal details)
+migration-inventory/
+workflow-exports/

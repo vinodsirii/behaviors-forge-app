@@ -396,7 +396,15 @@ echo "$LIB/dist/$TARBALL"                             # the ONLY line on stdout
 
 ```bash
 ENVIRONMENT="${1:-development}"                       # optional argument, default development
-APPS=(forge-apple-1 forge-apple-2)
+APPS=()
+for MANIFEST in "$ROOT"/apps/*/manifest.yml; do       # discover every app automatically
+  APP="$(basename "$(dirname "$MANIFEST")")"
+  if grep -qE '^[[:space:]]+id:[[:space:]]*ari:cloud:ecosystem::app/' "$MANIFEST"; then
+    APPS+=("$APP")                                     # registered: has an app id
+  else
+    echo "Skipping $APP: not registered yet" >&2       # scaffolded with --no-register
+  fi
+done
 TARBALL_NAME="$(basename "$("$ROOT/scripts/pack-common.sh" | tail -1)")"
 for APP in "${APPS[@]}"; do
   cd "$ROOT/apps/$APP"
@@ -406,9 +414,39 @@ for APP in "${APPS[@]}"; do
 done
 ```
 
+- Apps are **discovered automatically**: any `apps/*/manifest.yml` with an app ID. A new app created by
+  `new-workflow-app.sh` is included as soon as it is registered.
 - It uses only the tarball's **file name** with a relative path, so each app's `package.json` does not contain
   a machine-specific absolute path.
-- Adding a third app is one change: add it to `APPS`.
+
+### `scripts/new-workflow-app.sh`
+
+```bash
+./scripts/new-workflow-app.sh <app-name> <RULE_PREFIX> "<Jira workflow name>" [--no-register]
+```
+
+1. **Validates the input.** The app name must be lowercase with dashes, the prefix uppercase, and the
+   workflow name free of quotes (it is inserted into JS and JSON strings). The target folder must not exist.
+2. **Copies** `templates/workflow-app` to `apps/<app-name>` and replaces the placeholders with `sed`:
+   `__APP_NAME__`, `__PREFIX__`, `__PREFIX_LOWER__` (for module keys) and `__WORKFLOW_NAME__`.
+   `sed_escape` protects values containing `&`, `|` or `\`. The template stores `gitignore` without the dot,
+   so it does not apply inside `templates/`; the script renames it.
+3. **Packs and installs** the library (running its tests) plus `@forge/api`.
+4. **Runs `forge register`** to give the copy its own app ID, then `forge lint`.
+   Copying an app folder without re-registering would make both copies deploy over the same app.
+
+## Part 3b: Workflow discovery tool (`tools/workflow-discovery`)
+
+Reads Jira Data Center workflow XML exports and produces the migration inventory.
+Run it with `node src/cli.js <exports-folder> [--out <folder>] [--all]`, and test it with `npm test` (21 tests).
+
+| File | Responsibility |
+|---|---|
+| `src/parse.js` | Parses one OSWorkflow XML file with `fast-xml-parser`. Collects initial, global, common and per-status transitions, resolves step IDs to status names, flattens nested AND/OR conditions, and keeps CDATA scripts |
+| `src/classify.js` | Identifies the vendor from the Java class-name prefix (`com.onresolve.` = ScriptRunner, `com.innovalog.` = JMWE, `com.googlecode.jsu.` = JSU, `com.atlassian.jira.` = built-in…). Marks the rule custom or native and suggests the Forge module. Unknown vendors count as custom, so they are reviewed rather than missed |
+| `src/report.js` | Flattens rules into rows. Built-in rules are hidden unless `--all` is given, and every transition gets at least one row. Renders RFC 4180 CSV and Markdown, with pipes escaped |
+| `src/cli.js` | Reads every `*.xml` in the folder (the file name is the workflow name), skips broken files without stopping, writes `inventory.csv` and `inventory.md`, and prints a summary |
+| `test/fixtures/Sample Approval Workflow.xml` | A realistic export mixing built-in, ScriptRunner, JSU, JMWE and in-house rules, with nested conditions and a common action |
 
 ### `.gitattributes` / `.gitignore`
 

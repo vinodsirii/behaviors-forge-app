@@ -1,0 +1,48 @@
+# __APP_NAME__ - workflow rules for the Jira workflow "__WORKFLOW_NAME__".
+# All business logic comes from the shared library @vinod/forge-common.
+#
+# Generated from templates/workflow-app by scripts/new-workflow-app.sh.
+# Replace the three EXAMPLE rules with the rules listed for this workflow in the
+# migration inventory (tools/workflow-discovery). Module keys are permanent once
+# a workflow uses them - choose them carefully and never rename them afterwards.
+modules:
+  # Validator: runs when the user attempts the transition; can block it with a message.
+  jira:workflowValidator:
+    - key: __PREFIX_LOWER__-required-fields-validator
+      name: "__PREFIX__ – Validator: Required fields (EXAMPLE)"
+      description: "Blocks the transition unless the required fields are set."
+      function: __PREFIX_LOWER__-validate-required
+
+  # Condition: decides whether the transition is offered at all.
+  # Jira expression - evaluated by Jira, no function needed.
+  jira:workflowCondition:
+    - key: __PREFIX_LOWER__-assignee-only-condition
+      name: "__PREFIX__ – Condition: Only assignee can transition (EXAMPLE)"
+      description: "Only the current assignee can see and use this transition."
+      expression: issue.assignee != null && issue.assignee.accountId == user.accountId
+
+  # Post function: runs asynchronously AFTER the transition has completed.
+  jira:workflowPostFunction:
+    - key: __PREFIX_LOWER__-audit-comment-postfunction
+      name: "__PREFIX__ – Post function: Add audit comment (EXAMPLE)"
+      description: "Adds an audit comment after the transition."
+      function: __PREFIX_LOWER__-audit-comment
+
+  # Maps function keys (used above) to exported handlers in src/index.js.
+  function:
+    - key: __PREFIX_LOWER__-validate-required
+      handler: index.validateRequired
+    - key: __PREFIX_LOWER__-audit-comment
+      handler: index.auditComment
+
+# `forge register` adds the app id below when the app is scaffolded.
+app:
+  runtime:
+    name: nodejs22.x
+    memoryMB: 256
+    architecture: arm64
+
+permissions:
+  scopes:
+    - read:jira-work    # getIssue
+    - write:jira-work   # addComment, setLabel

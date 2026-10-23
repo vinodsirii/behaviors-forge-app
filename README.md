@@ -18,6 +18,8 @@ The goal is to prove that shared logic is written once, unit-tested once and reu
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): diagrams of the components, the build and deploy pipeline,
   the runtime sequence, how the apps relate, and the design decisions
 - [docs/CODE-WALKTHROUGH.md](docs/CODE-WALKTHROUGH.md): every file and function explained line by line
+- [docs/MIGRATION-PLAN.md](docs/MIGRATION-PLAN.md): the plan and tooling for migrating Jira Data Center
+  workflow logic (ScriptRunner, JSU, JMWE…) to Forge apps using this pattern
 
 ```
 forge-apple/
@@ -30,10 +32,29 @@ forge-apple/
 │   └── test/*.test.js       Jest unit tests (@forge/api is mocked)
 ├── apps/forge-apple-1/      validator + condition + post function (FA1)
 ├── apps/forge-apple-2/      validator + condition + post function (FA2)
+├── templates/workflow-app/  starting point for new per-workflow apps (DC migration)
+├── tools/workflow-discovery/ reads DC workflow XML exports and builds the migration inventory
 └── scripts/
     ├── pack-common.sh       test + npm pack the library into dist/
-    └── deploy-all.sh        pack, install the tarball in both apps, lint, deploy both
+    ├── deploy-all.sh        pack, install the tarball in every registered app, lint, deploy all
+    └── new-workflow-app.sh  scaffold + register a new workflow app from the template
 ```
+
+### Migrating Data Center workflows (quick start)
+
+```bash
+# 1. Build the inventory from DC workflow XML exports (one file per workflow, named after it)
+cd tools/workflow-discovery && npm install && npm test
+node src/cli.js ../../workflow-exports --out ../../migration-inventory
+
+# 2. Scaffold an app per workflow (interactive forge register; add --no-register to skip)
+cd ../.. && ./scripts/new-workflow-app.sh wf-purchase-approval PA "Purchase Approval"
+
+# 3. Replace the EXAMPLE rules, then deploy every app
+./scripts/deploy-all.sh
+```
+
+See [docs/MIGRATION-PLAN.md](docs/MIGRATION-PLAN.md) for the full process.
 
 ## How the apps consume the library
 

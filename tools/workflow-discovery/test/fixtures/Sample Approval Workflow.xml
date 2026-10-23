@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE workflow PUBLIC "-//OpenSymphony Group//DTD OSWorkflow 2.8//EN" "http://www.opensymphony.com/osworkflow/workflow_2_8.dtd">
+<workflow>
+  <meta name="jira.description">Sample workflow used by the discovery tool tests</meta>
+  <initial-actions>
+    <action id="1" name="Create">
+      <validators>
+        <validator name="" type="class">
+          <arg name="permission">Create Issue</arg>
+          <arg name="class.name">com.atlassian.jira.workflow.validator.PermissionValidator</arg>
+        </validator>
+      </validators>
+      <results>
+        <unconditional-result old-status="null" status="open" step="1">
+          <post-functions>
+            <function type="class">
+              <arg name="class.name">com.atlassian.jira.workflow.function.issue.IssueCreateFunction</arg>
+            </function>
+          </post-functions>
+        </unconditional-result>
+      </results>
+    </action>
+  </initial-actions>
+  <global-actions>
+    <action id="51" name="Reopen">
+      <validators>
+        <validator name="" type="class">
+          <arg name="class.name">com.acme.jira.workflow.TicketNumberValidator</arg>
+          <arg name="pattern">^ACME-[0-9]+$</arg>
+        </validator>
+      </validators>
+      <results>
+        <unconditional-result old-status="Not Done" status="Done" step="1"/>
+      </results>
+    </action>
+  </global-actions>
+  <common-actions>
+    <action id="31" name="Done">
+      <results>
+        <unconditional-result old-status="Not Done" status="Done" step="6">
+          <post-functions>
+            <function type="class">
+              <arg name="class.name">com.atlassian.jira.workflow.function.issue.UpdateIssueStatusFunction</arg>
+            </function>
+            <function type="class">
+              <arg name="class.name">com.innovalog.jmwe.plugins.functions.SetFieldValueFunction</arg>
+              <arg name="field">resolution</arg>
+              <arg name="value">Done</arg>
+            </function>
+          </post-functions>
+        </unconditional-result>
+      </results>
+    </action>
+  </common-actions>
+  <steps>
+    <step id="1" name="To Do">
+      <actions>
+        <common-action id="31"/>
+        <action id="11" name="Start Progress">
+          <restrict-to>
+            <conditions type="AND">
+              <condition type="class">
+                <arg name="class.name">com.googlecode.jsu.workflow.condition.ValueFieldCondition</arg>
+                <arg name="fieldKey">priority</arg>
+              </condition>
+              <conditions type="OR">
+                <condition type="class">
+                  <arg name="class.name">com.atlassian.jira.workflow.condition.AllowOnlyAssigneeCondition</arg>
+                </condition>
+                <condition type="class">
+                  <arg name="class.name">com.onresolve.jira.groovy.GroovyCondition</arg>
+                  <arg name="FIELD_CONDITION"><![CDATA[isUserMemberOfRole('Developers')]]></arg>
+                </condition>
+              </conditions>
+            </conditions>
+          </restrict-to>
+          <validators>
+            <validator name="" type="class">
+              <arg name="class.name">com.onresolve.jira.groovy.GroovyValidator</arg>
+              <arg name="FIELD_CONDITION"><![CDATA[issue.summary?.trim()?.length() >= 10]]></arg>
+              <arg name="FIELD_ERROR_MESSAGE">Summary must be at least 10 characters</arg>
+            </validator>
+          </validators>
+          <results>
+            <unconditional-result old-status="Not Done" status="Underway" step="3">
+              <post-functions>
+                <function type="class">
+                  <arg name="class.name">com.atlassian.jira.workflow.function.issue.UpdateIssueStatusFunction</arg>
+                </function>
+                <function type="class">
+                  <arg name="class.name">com.onresolve.jira.groovy.GroovyFunctionPlugin</arg>
+                  <arg name="FIELD_INLINE_SCRIPT"><![CDATA[
+                    // add an audit comment with "quotes", commas, and | pipes
+                    commentManager.create(issue, currentUser, "Started", false)
+                  ]]></arg>
+                </function>
+              </post-functions>
+            </unconditional-result>
+          </results>
+        </action>
+      </actions>
+    </step>
+    <step id="3" name="In Progress">
+      <actions>
+        <common-action id="31"/>
+      </actions>
+    </step>
+    <step id="6" name="Done"/>
+  </steps>
+</workflow>

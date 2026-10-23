@@ -1,0 +1,19 @@
+{
+  "name": "workflow-discovery",
+  "version": "1.0.0",
+  "description": "Reads Jira Data Center workflow XML exports and builds a Forge migration inventory",
+  "private": true,
+  "type": "module",
+  "bin": { "workflow-discovery": "src/cli.js" },
+  "scripts": {
+    "discover": "node src/cli.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.11.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": { "testEnvironment": "node", "transform": {} }
+}

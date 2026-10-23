@@ -1,0 +1,8 @@
+{
+  "name": "__APP_NAME__",
+  "version": "1.0.0",
+  "description": "Jira workflow rules for the '__WORKFLOW_NAME__' workflow",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true
+}

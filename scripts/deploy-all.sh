@@ -2,9 +2,12 @@
 # -----------------------------------------------------------------------------
 # deploy-all.sh [environment]
 #
-# One command to ship a library change to BOTH apps:
+# One command to ship a library change to EVERY app in apps/:
 #   1. pack-common.sh   -> test + pack the library into a .tgz
 #   2. for each app     -> npm install the .tgz, forge lint, forge deploy
+#
+# Apps are discovered automatically: any apps/<name>/manifest.yml that has an
+# app id. Apps scaffolded with --no-register (no id yet) are skipped with a warning.
 #
 # Usage:  ./scripts/deploy-all.sh              (deploys to development)
 #         ./scripts/deploy-all.sh staging
@@ -13,7 +16,21 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ENVIRONMENT="${1:-development}"
-APPS=(forge-apple-1 forge-apple-2)
+
+APPS=()
+for MANIFEST in "$ROOT"/apps/*/manifest.yml; do
+  [[ -f "$MANIFEST" ]] || continue
+  APP="$(basename "$(dirname "$MANIFEST")")"
+  if grep -qE '^[[:space:]]+id:[[:space:]]*ari:cloud:ecosystem::app/' "$MANIFEST"; then
+    APPS+=("$APP")
+  else
+    echo "Skipping $APP: not registered yet (no app id). Run 'forge register' in apps/$APP." >&2
+  fi
+done
+if [[ ${#APPS[@]} -eq 0 ]]; then
+  echo "No registered apps found in apps/." >&2; exit 1
+fi
+echo "Apps to deploy: ${APPS[*]}"
 
 # Only the file name is needed: each app installs it via a relative path so the
 # path stored in the app's package.json works on any machine.
@@ -28,4 +45,4 @@ for APP in "${APPS[@]}"; do
   forge deploy --non-interactive -e "$ENVIRONMENT"
 done
 
-echo "Done: both apps deployed with $TARBALL_NAME"
+echo "Done: ${#APPS[@]} app(s) deployed with $TARBALL_NAME"
